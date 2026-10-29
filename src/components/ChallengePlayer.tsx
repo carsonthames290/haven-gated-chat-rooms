@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getChallenge, memorySequence, slideStart, slideTile, lightStart, toggleLights, maze, walkMaze, botMove, chessSquares, type ChallengeProof } from "@/lib/challenges";
 import { completeChallenge, startChallenge } from "@/lib/challenges.functions";
-import mathVideo from "@/assets/boring-math.mp4.asset.json";
+import mathVideo from "@/assets/boring-math.webm.asset.json";
 
 export function ChallengePlayer({ roomId, challengeId, challengeKey, reason, onComplete }: { roomId: string; challengeId: string; challengeKey: string; reason: string; onComplete: () => void }) {
   const challenge = getChallenge(challengeKey);
