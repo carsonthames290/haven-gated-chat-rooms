@@ -15,6 +15,20 @@
       "when": 1793312997459,
       "tag": "0001_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793314185150,
+      "tag": "0002_room_member_moderation",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793314312943,
+      "tag": "0003_enforce_ban_membership",
+      "breakpoints": true
     }
   ]
 }
