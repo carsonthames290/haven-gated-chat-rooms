@@ -27,7 +27,7 @@ export function ModerationDialog({ roomId, member, onClose, onSaved }: {
     setSaving(true);
     const { error } = await supabase.rpc("moderate_member", {
       _room: roomId, _user: member.user_id, _action: action,
-      _seconds: isTimedAction(action) ? seconds : undefined, _reason: reason.trim(),
+      ...(isTimedAction(action) ? { _seconds: seconds } : {}), _reason: reason.trim(),
     });
     setSaving(false);
     if (error) { toast.error(error.message); return; }
@@ -53,7 +53,7 @@ export function ModerationDialog({ roomId, member, onClose, onSaved }: {
         <label htmlFor="moderation-duration" className="text-sm font-medium">Duration</label>
         <Select value={duration} onValueChange={setDuration}>
           <SelectTrigger id="moderation-duration"><SelectValue /></SelectTrigger>
-          <SelectContent>{[["60", "1 minute"], ["300", "5 minutes"], ["600", "10 minutes"], ["1800", "30 minutes"], ["3600", "1 hour"], ["86400", "1 day"], ["604800", "7 days"], ["custom", "Custom duration"]].map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
+          <SelectContent>{([ ["60", "1 minute"], ["300", "5 minutes"], ["600", "10 minutes"], ["1800", "30 minutes"], ["3600", "1 hour"], ["86400", "1 day"], ["604800", "7 days"], ["custom", "Custom duration"] ] as const).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
         </Select>
         {duration === "custom" && <div className="flex gap-2">
           <Input aria-label="Custom duration" type="number" min="1" value={custom} onChange={(e) => setCustom(e.target.value)} className="min-w-0 flex-1" />
