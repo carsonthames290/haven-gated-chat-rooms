@@ -1,5 +1,5 @@
 export type ModerationAction = "none" | "warn" | "mute" | "timeout" | "slow" | "kick" | "ban";
-export type ModerationState = { moderation_action: string; moderation_until: string | null; moderation_reason: string };
+export type ModerationState = { moderation_action: string; moderation_until: string | null; moderation_reason: string; challenge_key?: string | null; challenge_id?: string | null };
 export const moderationOptions: { value: ModerationAction; label: string }[] = [
   { value: "none", label: "No punishment / clear restrictions" },
   { value: "warn", label: "Warning only" },

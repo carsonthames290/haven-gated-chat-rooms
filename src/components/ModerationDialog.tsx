@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isTimedAction, moderationOptions, type ModerationAction } from "@/lib/moderation";
+import { challenges } from "@/lib/challenges";
 
 export function ModerationDialog({ roomId, member, onClose, onSaved }: {
   roomId: string;
@@ -14,7 +15,8 @@ export function ModerationDialog({ roomId, member, onClose, onSaved }: {
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [action, setAction] = useState<ModerationAction>("none");
+  const [action, setAction] = useState<ModerationAction | "challenge">("challenge");
+  const [challengeKey, setChallengeKey] = useState("riddle");
   const [duration, setDuration] = useState("300");
   const [custom, setCustom] = useState("10");
   const [unit, setUnit] = useState("60");
@@ -25,7 +27,9 @@ export function ModerationDialog({ roomId, member, onClose, onSaved }: {
   async function apply() {
     if (invalid || saving) return;
     setSaving(true);
-    const { error } = await supabase.rpc("moderate_member", {
+    const { error } = action === "challenge" ? await supabase.rpc("assign_room_challenge", {
+      _room: roomId, _user: member.user_id, _key: challengeKey, _reason: reason.trim(),
+    }) : await supabase.rpc("moderate_member", {
       _room: roomId, _user: member.user_id, _action: action,
       ...(isTimedAction(action) ? { _seconds: seconds } : {}), _reason: reason.trim(),
     });
@@ -44,11 +48,12 @@ export function ModerationDialog({ roomId, member, onClose, onSaved }: {
       </DialogHeader>
       <div className="space-y-2">
         <label htmlFor="moderation-action" className="text-sm font-medium">Action</label>
-        <Select value={action} onValueChange={(value) => setAction(value as ModerationAction)}>
+        <Select value={action} onValueChange={(value) => setAction(value as ModerationAction | "challenge")}>
           <SelectTrigger id="moderation-action" className="h-auto min-h-11 [&>span]:whitespace-normal [&>span]:text-left"><SelectValue /></SelectTrigger>
-          <SelectContent>{moderationOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
+          <SelectContent><SelectItem value="challenge">Funny challenge</SelectItem>{moderationOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
         </Select>
       </div>
+      {action === "challenge" && <div className="space-y-3"><label htmlFor="funny-challenge" className="text-sm font-medium">Choose their fate · {challenges.length} challenges</label><Select value={challengeKey} onValueChange={setChallengeKey}><SelectTrigger id="funny-challenge" className="h-auto min-h-11 [&>span]:whitespace-normal [&>span]:text-left"><SelectValue /></SelectTrigger><SelectContent>{challenges.map((challenge) => <SelectItem key={challenge.key} value={challenge.key}>{challenge.emoji} {challenge.title}</SelectItem>)}</SelectContent></Select><p className="text-sm text-muted-foreground">{challenges.find((c) => c.key === challengeKey)?.prompt}</p></div>}
       {isTimedAction(action) && <div className="space-y-3">
         <label htmlFor="moderation-duration" className="text-sm font-medium">Duration</label>
         <Select value={duration} onValueChange={setDuration}>
