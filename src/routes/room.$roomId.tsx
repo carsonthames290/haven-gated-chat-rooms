@@ -77,7 +77,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
     if (!body || !me) return;
     setText("");
     const { data, error } = await supabase.from("messages").insert({ room_id: roomId, body, display_name: me.display_name }).select().single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setMsgs((cur) => (cur.some((m) => m.id === data.id) ? cur : [...cur, data]));
   }
   const setStatus = async (uid: string, status: string) => {
@@ -96,7 +96,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
     navigate({ to: "/" });
   };
 
-  const grouped = useMemo(() => msgs.map((m, i) => ({ ...m, first: i === 0 || msgs[i - 1].user_id !== m.user_id })), [msgs]);
+  const grouped = useMemo(() => msgs.map((m, i) => ({ ...m, first: i === 0 || msgs[i - 1]?.user_id !== m.user_id })), [msgs]);
 
   if (missing) return <Centered title="Room not found" body="It may have been deleted, or you haven't requested to join." />;
   if (!room || !me) return <Centered title="Loading…" body="" />;

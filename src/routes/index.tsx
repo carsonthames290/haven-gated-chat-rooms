@@ -89,13 +89,13 @@ function Lobby({ userId }: { userId: string }) {
   async function create(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.rpc("create_room", { _name: name || "Untitled room" });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     navigate({ to: "/room/$roomId", params: { roomId: (data as Room).id } });
   }
   async function join(e: React.FormEvent) {
     e.preventDefault();
     const { data, error } = await supabase.rpc("request_join", { _code: code });
-    if (error) return toast.error(error.message.includes("not found") ? "No room with that code" : error.message);
+    if (error) { toast.error(error.message.includes("not found") ? "No room with that code" : error.message); return; }
     navigate({ to: "/room/$roomId", params: { roomId: data as string } });
   }
 
