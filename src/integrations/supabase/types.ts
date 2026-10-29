@@ -71,6 +71,9 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string
+          moderation_action: string
+          moderation_reason: string
+          moderation_until: string | null
           room_id: string
           status: string
           user_id: string
@@ -78,6 +81,9 @@ export type Database = {
         Insert: {
           created_at?: string
           display_name: string
+          moderation_action?: string
+          moderation_reason?: string
+          moderation_until?: string | null
           room_id: string
           status?: string
           user_id: string
@@ -85,6 +91,9 @@ export type Database = {
         Update: {
           created_at?: string
           display_name?: string
+          moderation_action?: string
+          moderation_reason?: string
+          moderation_until?: string | null
           room_id?: string
           status?: string
           user_id?: string
@@ -147,6 +156,16 @@ export type Database = {
       has_room_row: { Args: { _room: string }; Returns: boolean }
       is_room_host: { Args: { _room: string }; Returns: boolean }
       is_room_member: { Args: { _room: string }; Returns: boolean }
+      moderate_member: {
+        Args: {
+          _action: string
+          _reason?: string
+          _room: string
+          _seconds?: number
+          _user: string
+        }
+        Returns: undefined
+      }
       request_join: { Args: { _code: string }; Returns: string }
     }
     Enums: {
