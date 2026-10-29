@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Haven Gated Chat Rooms
+
+make a site that can run through cloudflare from a github repo that is like a chat app where you can host private rooms and give a code and the host can accept people and stuff to chat. Give it a absolutely beautiful ui too.
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://haven-gated-chat-rooms.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/0c50add3-1177-4beb-b85c-efe3d11ee6bb).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
