@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ModerationDialog } from "@/components/ModerationDialog";
 import { activeModeration, remainingTime, type ModerationState } from "@/lib/moderation";
+import { ChallengePlayer } from "@/components/ChallengePlayer";
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
@@ -56,7 +57,8 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
   const timedOut = restriction === "timeout";
   const lastMine = [...msgs].reverse().find((m) => m.user_id === userId);
   const slowWait = restriction === "slow" && lastMine ? Math.max(0, Math.ceil((Date.parse(lastMine.created_at) + 30000 - now) / 1000)) : 0;
-  const cannotSend = !approved || timedOut || restriction === "mute" || slowWait > 0;
+  const challenged = restriction === "challenge";
+  const cannotSend = !approved || timedOut || challenged || restriction === "mute" || slowWait > 0;
   const pending = members.filter((m) => m.status === "pending");
   const inRoom = members.filter((m) => m.status === "approved" && m.moderation_action !== "ban");
   const banned = members.filter((m) => m.moderation_action === "ban");
@@ -131,8 +133,9 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
           <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="Toggle members" onClick={() => setMembersOpen(!membersOpen)}><Users /></Button>
         </header>
         <div className="flex-1 space-y-1 overflow-y-auto px-5 py-4">
-          {timedOut ? <div className="mt-16 text-center"><Hourglass className="mx-auto mb-4 h-8 w-8 text-primary" /><h2 className="text-2xl">Taking a timeout</h2><p role="status" className="mt-2 font-mono text-primary">{remainingTime(me.moderation_until, now)} remaining</p>{me.moderation_reason && <p className="mt-3 break-words text-muted-foreground">{me.moderation_reason}</p>}</div> : grouped.length === 0 && <p className="mt-20 text-center text-muted-foreground">Say hello 👋</p>}
-          {(!timedOut ? grouped : []).map((m) => {
+          {challenged && me.challenge_id && me.challenge_key && <ChallengePlayer key={me.challenge_id} roomId={roomId} challengeId={me.challenge_id} challengeKey={me.challenge_key} reason={me.moderation_reason} onComplete={() => { loadMembers(); loadMsgs(); }} />}
+          {timedOut ? <div className="mt-16 text-center"><Hourglass className="mx-auto mb-4 h-8 w-8 text-primary" /><h2 className="text-2xl">Taking a timeout</h2><p role="status" className="mt-2 font-mono text-primary">{remainingTime(me.moderation_until, now)} remaining</p>{me.moderation_reason && <p className="mt-3 break-words text-muted-foreground">{me.moderation_reason}</p>}</div> : !challenged && grouped.length === 0 && <p className="mt-20 text-center text-muted-foreground">Say hello 👋</p>}
+          {(!timedOut && !challenged ? grouped : []).map((m) => {
             const mine = m.user_id === userId;
             return (
               <div key={m.id} className={`flex animate-rise flex-col ${mine ? "items-end" : "items-start"} ${m.first ? "pt-3" : ""}`}>
@@ -145,7 +148,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
           })}
           <div ref={endRef} />
         </div>
-        {!timedOut && restriction !== "none" && <div role="status" className="border-t px-5 py-3 text-sm text-primary"><span>{restriction === "warn" ? "Warning from the host" : `${restriction === "mute" ? "Muted" : "Slow mode"} · ${remainingTime(me.moderation_until, now)} remaining`}</span>{me.moderation_reason && <p className="mt-1 break-words text-muted-foreground">{me.moderation_reason}</p>}</div>}
+        {!timedOut && !challenged && restriction !== "none" && <div role="status" className="border-t px-5 py-3 text-sm text-primary"><span>{restriction === "warn" ? "Warning from the host" : `${restriction === "mute" ? "Muted" : "Slow mode"} · ${remainingTime(me.moderation_until, now)} remaining`}</span>{me.moderation_reason && <p className="mt-1 break-words text-muted-foreground">{me.moderation_reason}</p>}</div>}
         <form onSubmit={send} className="flex gap-2 border-t p-4">
           <Input aria-label="Message" disabled={cannotSend} value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} placeholder={slowWait > 0 ? `Wait ${slowWait}s…` : cannotSend ? "Messaging paused" : "Write a message…"} className="h-12 min-w-0 rounded-full px-5" />
           <Button aria-label="Send message" type="submit" variant="hero" className="h-12 w-12 shrink-0 p-0" disabled={!text.trim() || cannotSend}><Send /></Button>

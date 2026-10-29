@@ -69,6 +69,9 @@ export type Database = {
       }
       room_members: {
         Row: {
+          challenge_id: string | null
+          challenge_key: string | null
+          challenge_started_at: string | null
           created_at: string
           display_name: string
           moderation_action: string
@@ -79,6 +82,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          challenge_id?: string | null
+          challenge_key?: string | null
+          challenge_started_at?: string | null
           created_at?: string
           display_name: string
           moderation_action?: string
@@ -89,6 +95,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          challenge_id?: string | null
+          challenge_key?: string | null
+          challenge_started_at?: string | null
           created_at?: string
           display_name?: string
           moderation_action?: string
@@ -137,6 +146,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_room_challenge: {
+        Args: { _key: string; _reason?: string; _room: string; _user: string }
+        Returns: undefined
+      }
       create_room: {
         Args: { _name: string }
         Returns: {

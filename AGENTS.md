@@ -11,3 +11,4 @@
 
 - Room moderation uses a host-validated database RPC and message validation trigger; client controls are never the security boundary.
 - Timed moderation expires by comparing stored deadlines with the current time, and room membership polling keeps moderation updates reliable without realtime delivery.
+- Playful challenges use a shared catalog and proof validators; authenticated server functions validate the assigned challenge before a conditional privileged clear, and chess uses chess.js legal moves with deterministic bot replay.
