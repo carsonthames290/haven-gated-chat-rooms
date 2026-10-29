@@ -14,13 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          display_name: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          display_name: string
+          id?: string
+          room_id: string
+          user_id?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      room_members: {
+        Row: {
+          created_at: string
+          display_name: string
+          room_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          room_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          room_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          host_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          host_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          host_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_room: {
+        Args: { _name: string }
+        Returns: {
+          code: string
+          created_at: string
+          host_id: string
+          id: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      has_room_row: { Args: { _room: string }; Returns: boolean }
+      is_room_host: { Args: { _room: string }; Returns: boolean }
+      is_room_member: { Args: { _room: string }; Returns: boolean }
+      request_join: { Args: { _code: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
