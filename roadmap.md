@@ -4,6 +4,6 @@
 - [x] Test moderation rules and the signed-in host flow.
 
 # Playful challenges
-- [ ] Add 25 built-in challenges and host assignment/forgiveness.
-- [ ] Enforce challenge completion before messaging resumes.
-- [ ] Test catalog, game rules and signed-in challenge flow.
+- [x] Add 25 built-in challenges and host assignment/forgiveness.
+- [x] Enforce challenge completion before messaging resumes.
+- [x] Test catalog, game rules and signed-in challenge flow.
