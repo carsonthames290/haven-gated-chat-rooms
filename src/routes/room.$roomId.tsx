@@ -134,7 +134,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
         </header>
         <div className="flex-1 space-y-1 overflow-y-auto px-5 py-4">
           {challenged && me.challenge_id && me.challenge_key && <ChallengePlayer key={me.challenge_id} roomId={roomId} challengeId={me.challenge_id} challengeKey={me.challenge_key} reason={me.moderation_reason} onComplete={() => { loadMembers(); loadMsgs(); }} />}
-          {timedOut ? <div className="mt-16 text-center"><Hourglass className="mx-auto mb-4 h-8 w-8 text-primary" /><h2 className="text-2xl">Taking a timeout</h2><p role="status" className="mt-2 font-mono text-primary">{remainingTime(me.moderation_until, now)} remaining</p>{me.moderation_reason && <p className="mt-3 break-words text-muted-foreground">{me.moderation_reason}</p>}</div> : grouped.length === 0 && <p className="mt-20 text-center text-muted-foreground">Say hello 👋</p>}
+          {timedOut ? <div className="mt-16 text-center"><Hourglass className="mx-auto mb-4 h-8 w-8 text-primary" /><h2 className="text-2xl">Taking a timeout</h2><p role="status" className="mt-2 font-mono text-primary">{remainingTime(me.moderation_until, now)} remaining</p>{me.moderation_reason && <p className="mt-3 break-words text-muted-foreground">{me.moderation_reason}</p>}</div> : !challenged && grouped.length === 0 && <p className="mt-20 text-center text-muted-foreground">Say hello 👋</p>}
           {(!timedOut && !challenged ? grouped : []).map((m) => {
             const mine = m.user_id === userId;
             return (
