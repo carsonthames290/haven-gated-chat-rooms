@@ -51,15 +51,15 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
 
   const me = members.find((m) => m.user_id === userId);
   const isHost = room?.host_id === userId;
-  const approved = me?.status === "approved";
+  const approved = me?.status === "approved" && me.moderation_action !== "ban";
   const restriction = activeModeration(me, now);
   const timedOut = restriction === "timeout";
   const lastMine = [...msgs].reverse().find((m) => m.user_id === userId);
   const slowWait = restriction === "slow" && lastMine ? Math.max(0, Math.ceil((Date.parse(lastMine.created_at) + 30000 - now) / 1000)) : 0;
   const cannotSend = !approved || timedOut || restriction === "mute" || slowWait > 0;
   const pending = members.filter((m) => m.status === "pending");
-  const inRoom = members.filter((m) => m.status === "approved");
-  const banned = members.filter((m) => m.status === "banned");
+  const inRoom = members.filter((m) => m.status === "approved" && m.moderation_action !== "ban");
+  const banned = members.filter((m) => m.moderation_action === "ban");
 
   const loadMembers = () =>
     supabase.from("room_members").select("*").eq("room_id", roomId).then(({ data, error }) => { if (!error) { setMembers(data ?? []); setMembersLoaded(true); } });
@@ -114,7 +114,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
   if (me.status === "pending")
     return <Centered icon={<Hourglass className="h-6 w-6 animate-pulse text-primary" />} title="Waiting at the door" body={`The host of “${room.name}” will let you in shortly.`} />;
   if (me.status === "rejected") return <Centered title="Not this time" body="The host declined your request." />;
-  if (me.status === "banned") return <Centered title="Banned from this room" body={me.moderation_reason || "The host has blocked your access."} />;
+  if (me.moderation_action === "ban") return <Centered title="Banned from this room" body={me.moderation_reason || "The host has blocked your access."} />;
 
   return (
     <div className="relative mx-auto flex h-dvh max-w-6xl gap-4 p-2 md:p-4">
