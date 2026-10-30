@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { Chess, type Square } from "chess.js";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getChallenge, memorySequence, slideStart, slideTile, lightStart, toggleLights, maze, walkMaze, botMove, chessSquares, type ChallengeProof } from "@/lib/challenges";
-import { completeChallenge, startChallenge } from "@/lib/challenges.functions";
+import { supabase } from "@/integrations/supabase/client";
 import mathVideo from "@/assets/boring-math.webm.asset.json";
 
 export function ChallengePlayer({ roomId, challengeId, challengeKey, reason, onComplete }: { roomId: string; challengeId: string; challengeKey: string; reason: string; onComplete: () => void }) {
   const challenge = getChallenge(challengeKey);
-  const complete = useServerFn(completeChallenge), start = useServerFn(startChallenge);
   const [answer, setAnswer] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -25,7 +23,7 @@ export function ChallengePlayer({ roomId, challengeId, challengeKey, reason, onC
   if (!challenge) return <p>Challenge unavailable. Ask the host to clear your restriction.</p>;
   async function submit(proof: ChallengeProof) {
     if (busy) return; setBusy(true);
-    try { const result = await complete({ data: { roomId, challengeId, ...proof } }); setFeedback(result.message); if (result.completed) { toast.success(result.message); onComplete(); } }
+    try { const { data, error } = await supabase.rpc("complete_room_challenge", { _room_id: roomId, _challenge_id: challengeId, ...(proof.answer !== undefined ? { _answer: proof.answer } : {}), ...(proof.moves ? { _moves: proof.moves } : {}), ...(proof.steps ? { _steps: proof.steps } : {}) }); if (error) throw new Error(error.message); const result = data as { completed: boolean; message: string }; setFeedback(result.message); if (result.completed) { toast.success(result.message); onComplete(); } }
     catch (e) { setFeedback(e instanceof Error ? e.message : "Could not submit. Try again."); }
     finally { setBusy(false); }
   }
@@ -35,7 +33,7 @@ export function ChallengePlayer({ roomId, challengeId, challengeKey, reason, onC
     const next = new Chess(game.fen());
     try {
       const move = next.move({ from: selected, to: square, promotion: "q" });
-      const history = [...moves, move.san];
+      const history = [...moves, move.lan];
       if (!next.isGameOver()) { const reply = botMove(next); if (reply) next.move(reply); }
       setMoves(history); setGame(next); setFeedback(next.isCheckmate() ? next.turn() === "b" ? "Checkmate! Submit your victory." : "The bot won. Rematch?" : next.isDraw() ? "Draw. Try a rematch." : next.isCheck() ? "Check!" : "");
     } catch { if (next.get(square)?.color === "w") { setSelected(square); return; } }
@@ -51,7 +49,7 @@ export function ChallengePlayer({ roomId, challengeId, challengeKey, reason, onC
     <p>{challenge.prompt}</p>
     {challenge.kind === "answer" && <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); void submit({ answer }); }}><Input aria-label="Challenge answer" value={answer} onChange={(e) => setAnswer(e.target.value)} autoComplete="off" /><Button aria-label="Submit answer" type="submit" variant="hero" disabled={busy || !answer.trim()}><Send /></Button></form>}
     {challenge.kind === "video" && <div className="space-y-3">
-      {!started ? <Button variant="hero" disabled={busy} onClick={async () => { setBusy(true); try { await start({ data: { roomId, challengeId } }); setStarted(true); } catch { setFeedback("Class couldn't start. Try again."); } finally { setBusy(false); } }}>Attend detention</Button> : <video className="aspect-video w-full rounded-lg" src={mathVideo.url} controls playsInline preload="auto" onEnded={() => setWatched(true)} onSeeking={(e) => { const video = e.currentTarget; if (video.currentTime > (Number(video.dataset['furthest']) || 0) + 1) video.currentTime = Number(video.dataset['furthest']) || 0; }} onTimeUpdate={(e) => { const video = e.currentTarget; if (!video.seeking) video.dataset['furthest'] = String(Math.max(Number(video.dataset['furthest']) || 0, video.currentTime)); }} onRateChange={(e) => { if (e.currentTarget.playbackRate !== 1) e.currentTarget.playbackRate = 1; }} />}
+      {!started ? <Button variant="hero" disabled={busy} onClick={async () => { setBusy(true); try { const { error } = await supabase.rpc("start_room_challenge", { _room_id: roomId, _challenge_id: challengeId }); if (error) throw error; setStarted(true); } catch { setFeedback("Class couldn't start. Try again."); } finally { setBusy(false); } }}>Attend detention</Button> : <video className="aspect-video w-full rounded-lg" src={mathVideo.url} controls playsInline preload="auto" onEnded={() => setWatched(true)} onSeeking={(e) => { const video = e.currentTarget; if (video.currentTime > (Number(video.dataset['furthest']) || 0) + 1) video.currentTime = Number(video.dataset['furthest']) || 0; }} onTimeUpdate={(e) => { const video = e.currentTarget; if (!video.seeking) video.dataset['furthest'] = String(Math.max(Number(video.dataset['furthest']) || 0, video.currentTime)); }} onRateChange={(e) => { if (e.currentTarget.playbackRate !== 1) e.currentTarget.playbackRate = 1; }} />}
       {watched && <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); void submit({ answer }); }}><label htmlFor="video-answer">Exit question: 1/2 × 1/3 = ?</label><Input id="video-answer" value={answer} onChange={(e) => setAnswer(e.target.value)} /><Button type="submit" disabled={busy}>Finish class</Button></form>}
     </div>}
     {challenge.kind === "chess" && <div className="space-y-3"><div className="grid aspect-square w-full max-w-md grid-cols-8 overflow-hidden rounded-lg border">{chessSquares().map((square, i) => { const piece = game.get(square); return <Button key={square} variant="ghost" aria-label={`${square}${piece ? ` ${piece.color === "w" ? "White" : "Black"} ${piece.type}` : " empty"}`} onClick={() => chessClick(square)} className={`h-auto min-h-0 rounded-none p-0 text-3xl ${selected === square ? "bg-primary text-primary-foreground" : (Math.floor(i / 8) + i % 8) % 2 ? "bg-secondary text-foreground" : "bg-accent text-accent-foreground"}`}>{piece ? pieceSymbols[piece.color + piece.type] : ""}</Button>; })}</div><div className="flex flex-wrap gap-2"><Button variant="glass" onClick={() => { setGame(new Chess()); setMoves([]); setSelected(null); setFeedback(""); }}><RotateCcw /> Rematch</Button><Button disabled={busy || !game.isCheckmate() || game.turn() !== "b"} onClick={() => void submit({ moves })}>Claim victory</Button></div></div>}
