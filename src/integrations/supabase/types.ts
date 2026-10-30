@@ -150,6 +150,46 @@ export type Database = {
         Args: { _key: string; _reason?: string; _room: string; _user: string }
         Returns: undefined
       }
+      chess_apply: {
+        Args: {
+          b: string
+          castling: string
+          ep: number
+          fr: number
+          promo: string
+          t: number
+          turn: string
+        }
+        Returns: Record<string, unknown>
+      }
+      chess_attacked: {
+        Args: { b: string; by_color: string; sq: number }
+        Returns: boolean
+      }
+      chess_moves: {
+        Args: { b: string; castling: string; ep: number; turn: string }
+        Returns: {
+          mc: string
+          mf: number
+          mi: number
+          mp: string
+          mt: number
+        }[]
+      }
+      chess_replay: {
+        Args: { moves: string[] }
+        Returns: Record<string, unknown>
+      }
+      complete_room_challenge: {
+        Args: {
+          _answer?: string
+          _challenge_id: string
+          _moves?: string[]
+          _room_id: string
+          _steps?: number[]
+        }
+        Returns: Json
+      }
       create_room: {
         Args: { _name: string }
         Returns: {
@@ -180,6 +220,20 @@ export type Database = {
         Returns: undefined
       }
       request_join: { Args: { _code: string }; Returns: string }
+      start_room_challenge: {
+        Args: { _challenge_id: string; _room_id: string }
+        Returns: boolean
+      }
+      validate_room_challenge: {
+        Args: {
+          _answer: string
+          _challenge_id: string
+          _key: string
+          _moves: string[]
+          _steps: number[]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
