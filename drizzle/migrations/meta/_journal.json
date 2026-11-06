@@ -43,6 +43,13 @@
       "when": 1793327060151,
       "tag": "0005_challenge_checks_in_database",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793993995749,
+      "tag": "0006_name_security_question",
+      "breakpoints": true
     }
   ]
 }
