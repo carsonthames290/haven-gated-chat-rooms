@@ -54,16 +54,22 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          name_key: string | null
+          security_question: string | null
         }
         Insert: {
           created_at?: string
           display_name?: string
           id: string
+          name_key?: string | null
+          security_question?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string
           id?: string
+          name_key?: string | null
+          security_question?: string | null
         }
         Relationships: []
       }
@@ -219,6 +225,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      name_security_question: { Args: { _name_key: string }; Returns: string }
       request_join: { Args: { _code: string }; Returns: string }
       start_room_challenge: {
         Args: { _challenge_id: string; _room_id: string }
