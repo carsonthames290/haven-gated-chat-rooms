@@ -25,7 +25,12 @@ export function AuthCard() {
       else if (!data.session) toast.success("Check your email to confirm your account.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) toast.error(error.message);
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes("not confirmed")) toast.error("Confirm your email first — check your inbox for the link.");
+        else if (msg.includes("invalid login")) toast.error("Wrong email or password. New here? Create an account and confirm the email link first.");
+        else toast.error(error.message);
+      }
     }
     setBusy(false);
   }
