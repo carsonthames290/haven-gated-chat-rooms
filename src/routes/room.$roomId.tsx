@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Copy, Crown, Send, Trash2, ShieldCheck, Users, X, Hourglass } from "lucide-react";
+import { ArrowLeft, Check, Copy, Crown, Send, Trash2, ShieldCheck, Users, X, Hourglass, Gamepad2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { AuthCard } from "@/components/AuthCard";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ModerationDialog } from "@/components/ModerationDialog";
 import { activeModeration, remainingTime, type ModerationState } from "@/lib/moderation";
 import { ChallengePlayer } from "@/components/ChallengePlayer";
+import { GamePanel } from "@/components/GamePanel";
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
@@ -47,6 +48,7 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
   const [membersLoaded, setMembersLoaded] = useState(false);
   const [moderating, setModerating] = useState<Member | null>(null);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -119,18 +121,21 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
   if (me.moderation_action === "ban") return <Centered title="Banned from this room" body={me.moderation_reason || "The host has blocked your access."} />;
 
   return (
-    <div className="relative mx-auto flex h-dvh max-w-6xl gap-4 p-2 md:p-4">
-      <main className="glass flex min-w-0 flex-1 flex-col rounded-3xl">
-        <header className="flex items-center gap-3 border-b px-5 py-4">
+    <div className={`relative mx-auto flex h-dvh gap-2 p-2 md:gap-4 md:p-4 ${gameOpen ? "max-w-[1800px]" : "max-w-6xl"}`}>
+      <div className={`grid min-h-0 min-w-0 flex-1 gap-2 md:gap-4 ${gameOpen ? "grid-rows-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)] lg:grid-rows-1" : "grid-cols-1"}`}>
+      {gameOpen && <GamePanel onClose={() => setGameOpen(false)} />}
+      <main className="glass flex min-h-0 min-w-0 flex-1 flex-col rounded-3xl">
+        <header className="flex flex-wrap items-center gap-2 border-b px-3 py-3 md:px-5 md:py-4">
           <Link to="/" className="rounded-full p-2 hover:bg-secondary"><ArrowLeft className="h-4 w-4" /></Link>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 basis-20">
             <h1 className="truncate text-xl">{room.name}</h1>
             <p className="text-xs text-muted-foreground">{inRoom.length} in the room</p>
           </div>
           <Button variant="glass" size="sm" className="px-3 font-mono tracking-widest" onClick={() => { navigator.clipboard.writeText(room.code); toast.success("Code copied"); }}>
             {room.code} <Copy />
           </Button>
-          <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="Toggle members" onClick={() => setMembersOpen(!membersOpen)}><Users /></Button>
+          <Button variant={gameOpen ? "secondary" : "glass"} size="icon" className="shrink-0" aria-label="Toggle game panel" title={gameOpen ? "Close game panel" : "Play Card Night"} aria-pressed={gameOpen} onClick={() => setGameOpen(!gameOpen)}><Gamepad2 /></Button>
+          <Button variant="ghost" size="icon" className={`shrink-0 ${gameOpen ? "" : "md:hidden"}`} aria-label="Toggle members" onClick={() => setMembersOpen(!membersOpen)}><Users /></Button>
         </header>
         <div className="flex-1 space-y-1 overflow-y-auto px-5 py-4">
           {challenged && me.challenge_id && me.challenge_key && <ChallengePlayer key={me.challenge_id} roomId={roomId} challengeId={me.challenge_id} challengeKey={me.challenge_key} reason={me.moderation_reason} onComplete={() => { loadMembers(); loadMsgs(); }} />}
@@ -154,9 +159,10 @@ function Room({ roomId, userId }: { roomId: string; userId: string }) {
           <Button aria-label="Send message" type="submit" variant="hero" className="h-12 w-12 shrink-0 p-0" disabled={!text.trim() || cannotSend}><Send /></Button>
         </form>
       </main>
+      </div>
 
-      <aside className={`glass ${membersOpen ? "absolute inset-y-2 right-2 z-20 flex max-w-[calc(100%-1rem)]" : "hidden"} w-72 shrink-0 flex-col rounded-3xl p-4 md:static md:flex`}>
-        <Button aria-label="Close members" size="icon" variant="ghost" className="mb-2 self-end md:hidden" onClick={() => setMembersOpen(false)}><X /></Button>
+      <aside className={`glass ${membersOpen ? "absolute inset-y-2 right-2 z-20 flex max-w-[calc(100%-1rem)]" : "hidden"} w-72 shrink-0 flex-col rounded-3xl p-4 ${gameOpen ? "" : "md:static md:flex"}`}>
+        <Button aria-label="Close members" size="icon" variant="ghost" className={`mb-2 self-end ${gameOpen ? "" : "md:hidden"}`} onClick={() => setMembersOpen(false)}><X /></Button>
         {isHost && pending.length > 0 && (
           <section className="mb-5">
             <h3 className="mb-2 flex items-center gap-2 px-1 text-sm text-primary">Knocking ({pending.length})</h3>
