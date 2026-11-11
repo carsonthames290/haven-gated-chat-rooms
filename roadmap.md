@@ -1,9 +1,13 @@
-# Host moderation
-- [x] Add host-only moderation enforcement and timed expiry.
-- [x] Add member controls, duration selection and affected-member states.
-- [x] Test moderation rules and the signed-in host flow.
+# Completed punishments
+- [ ] Generate a fresh punishment when the member finished that one before.
 
-# Playful challenges
-- [x] Add 25 built-in challenges and host assignment/forgiveness.
-- [x] Enforce challenge completion before messaging resumes.
-- [x] Test catalog, game rules and signed-in challenge flow.
+# Game requests
+- [ ] Let one member request a game; on accept, open unofun.mathfun.workers.dev and copy a shared code for both.
+- [ ] Give the host the code first and copy it, then show/copy for the other player.
+- [ ] Ship the API request form for unofun.mathfun.workers.dev.
+
+# Completed work (archived)
+- [x] Host moderation with timed expiry, member controls, duration selection.
+- [x] 25 built-in playful challenges, host assignment/forgiveness, completion gating.
+- [x] Guest display-name login with security-question recovery.
+- [x] Challenge validation moved into database RPCs for the Cloudflare copy.
